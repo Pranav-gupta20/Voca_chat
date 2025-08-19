@@ -1,8 +1,16 @@
 from flask import Flask, request, jsonify
 import os
 import requests  # for calling Gemini API
+from flask import Flask, request, jsonify, send_from_directory
+app = Flask(__name__, static_folder='static')
 
 app = Flask(__name__)
+
+@app.route('/')
+def index():
+    return send_from_directory('static', 'index.html')
+
+
 
 # Get Gemini API key from environment variable
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
@@ -32,6 +40,7 @@ def chat():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+
 
 
 
