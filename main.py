@@ -1,12 +1,14 @@
 from flask import Flask, request, jsonify, send_from_directory
-import openai
+from openai import OpenAI
 import os
 
 app = Flask(__name__)
 
-# ✅ OpenAI API Key (your key inserted)
+# ✅ OpenAI API Key
 OPENAI_API_KEY = "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"
-openai.api_key = OPENAI_API_KEY
+
+# Initialize client
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 @app.route("/")
 def index():
@@ -21,12 +23,13 @@ def chat():
         return jsonify({"response": "No message received."})
 
     try:
-        response = openai.ChatCompletion.create(
+        # 🔹 New 1.x Chat API syntax
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[{"role": "user", "content": user_message}],
             max_tokens=150
         )
-        ai_text = response['choices'][0]['message']['content'].strip()
+        ai_text = response.choices[0].message.content.strip()
         return jsonify({"response": ai_text})
 
     except Exception as e:
