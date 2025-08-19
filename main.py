@@ -1,33 +1,37 @@
-from flask import Flask, request, jsonify, send_from_directory
-import requests
+from flask import Flask, request, jsonify
 import os
+import requests  # for calling Gemini API
 
 app = Flask(__name__)
 
-# Serve frontend
-@app.route("/")
-def index():
-    return send_from_directory('.', 'index.html')
+# Get Gemini API key from environment variable
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
-# Chat endpoint
 @app.route("/chat", methods=["POST"])
 def chat():
-    data = request.json
+    data = request.get_json()
     user_message = data.get("message") or data.get("prompt")
-    
-    # Gemini API request
-    api_key = os.environ.get("OPENAI_API_KEY")
-    headers = {"Authorization": f"Bearer {api_key}"}
-    payload = {"input": user_message}
-    
-    # Replace URL with your Gemini API endpoint
-    response = requests.post("https://api.gemini.example.com/v1/chat", headers=headers, json=payload)
-    resp_json = response.json()
-    
-    # Example: adjust depending on Gemini response structure
-    ai_response = resp_json.get("response", "Sorry, I didn't get that.")
+
+    if not user_message:
+        return jsonify({"response": "No message received."})
+
+    try:
+        # Replace this with the actual Gemini API request structure
+        response = requests.post(
+            "https://api.gemini.example/chat",  # <-- Gemini endpoint
+            headers={"Authorization": f"Bearer {GEMINI_API_KEY}"},
+            json={"input": user_message}
+        )
+        response.raise_for_status()
+        ai_response = response.json().get("response", "Sorry, I didn't get that.")
+    except Exception as e:
+        print("Error:", e)
+        ai_response = "⚠️ Error connecting to AI."
+
     return jsonify({"response": ai_response})
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+
+
 
