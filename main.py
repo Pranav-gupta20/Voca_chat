@@ -4,7 +4,7 @@ import os
 app = Flask(__name__)
 
 # Direct Gemini API key (for testing only!)
-GEMINI_API_KEY = "AIzaSyD3oAlp6vGcAf5ztxH2ZxIQ0m1thX4lIys"
+OPENAI_API_KEY = "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"
 
 # Serve frontend
 @app.route("/")
@@ -51,6 +51,7 @@ def chat():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
