@@ -1,1 +1,10 @@
+services:
+  - type: web
+    name: voca-chatbot
+    env: python
+    plan: free
+    region: oregon
+    branch: main
+    buildCommand: pip install -r requirements.txt
+    startCommand: python main.py
 
