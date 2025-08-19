@@ -101,21 +101,21 @@ function addMessage(text, type){
   chat.scrollTop = chat.scrollHeight;
 }
 
-// Backend API call
-async function callGemini(prompt){
+// Backend API call (relative /chat for Render deployment)
+async function callGemini(userMessage){
   addMessage("🤖 Voca is typing...", 'bot');
   try{
-    const response = await fetch("https://voca-chatbot.pranav.repl.co/chat", { // ✅ replace with your backend URL
+    const response = await fetch("/chat", {   // relative path
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt })
+      body: JSON.stringify({ message: userMessage }) // send 'message' key
     });
 
     if(!response.ok) throw new Error("Server error");
-    
+
     const data = await response.json();
     const aiText = data.response || "Sorry, I didn't get that.";
-    chat.lastChild.textContent = aiText; // replace "typing..." with response
+    chat.lastChild.textContent = aiText;
     speak(aiText);
   }catch(err){
     chat.lastChild.textContent = "⚠️ Error connecting to AI.";
