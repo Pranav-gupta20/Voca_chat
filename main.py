@@ -1,13 +1,18 @@
-# app.py
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 import os
-import requests  # Gemini API call ke liye
+import requests
 
 app = Flask(__name__)
 
-# Gemini API key environment variable se
+# Gemini API key from environment
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
+# Serve frontend
+@app.route("/")
+def index():
+    return send_from_directory('.', 'index.html')
+
+# Chat endpoint
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.get_json()
@@ -21,20 +26,28 @@ def chat():
         "Authorization": f"Bearer {GEMINI_API_KEY}",
         "Content-Type": "application/json"
     }
+
     payload = {
         "prompt": user_message,
-        "max_tokens": 150
+        "max_output_tokens": 150
     }
 
     try:
-        response = requests.post("https://api.gemini.com/v1/complete", headers=headers, json=payload)
+        response = requests.post(
+            "https://api.generativeai.google/v1beta2/models/text-bison-001:generate",
+            headers=headers,
+            json=payload
+        )
         response.raise_for_status()
         gemini_data = response.json()
-        ai_text = gemini_data.get("text", "Sorry, I didn't get that.")
+        ai_text = gemini_data.get("candidates", [{}])[0].get("output", "Sorry, I didn't get that.")
         return jsonify({"response": ai_text})
     except Exception as e:
         print("Error:", e)
         return jsonify({"response": "⚠️ Error connecting to AI."})
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    # Use Render PORT or default 5000
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
+
