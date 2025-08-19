@@ -1,36 +1,33 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-import openai
+from flask import Flask, request, jsonify, send_from_directory
+import requests
 import os
 
 app = Flask(__name__)
-CORS(app)  # allow frontend to call backend
 
-# ✅ Use your OpenAI API key stored in Render env variable
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# Serve frontend
+@app.route("/")
+def index():
+    return send_from_directory('.', 'index.html')
 
+# Chat endpoint
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.json
-    user_message = data.get("message", "")
-
-    if not user_message:
-        return jsonify({"reply": "No message received"}), 400
-
-    try:
-        response = openai.Completion.create(
-            engine="text-davinci-003",
-            prompt=user_message,
-            max_tokens=150
-        )
-        reply = response.choices[0].text.strip()
-        return jsonify({"reply": reply})
-    except Exception as e:
-        return jsonify({"reply": f"⚠️ Error: {str(e)}"}), 500
-
-@app.route("/")
-def home():
-    return "Backend is running! Use /chat with POST requests."
+    user_message = data.get("message") or data.get("prompt")
+    
+    # Gemini API request
+    api_key = os.environ.get("OPENAI_API_KEY")
+    headers = {"Authorization": f"Bearer {api_key}"}
+    payload = {"input": user_message}
+    
+    # Replace URL with your Gemini API endpoint
+    response = requests.post("https://api.gemini.example.com/v1/chat", headers=headers, json=payload)
+    resp_json = response.json()
+    
+    # Example: adjust depending on Gemini response structure
+    ai_response = resp_json.get("response", "Sorry, I didn't get that.")
+    return jsonify({"response": ai_response})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
