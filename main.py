@@ -39,7 +39,7 @@ def chat():
         )
         response.raise_for_status()
         gemini_data = response.json()
-        print("Gemini response:", gemini_data)  # Debug
+        print("Gemini response:", gemini_data)
 
         ai_text = gemini_data.get("candidates", [{}])[0].get("output", "Sorry, I didn't get that.")
         return jsonify({"response": ai_text})
