@@ -5,7 +5,7 @@ import os
 app = Flask(__name__)
 
 # ✅ OpenAI API Key
-OPENAI_API_KEY = "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"
+OPENAI_API_KEY = "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"
 openai.api_key = OPENAI_API_KEY
 
 @app.route("/")
@@ -37,6 +37,7 @@ def chat():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
