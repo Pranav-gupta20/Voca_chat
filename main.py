@@ -6,6 +6,8 @@ app = Flask(__name__)
 
 # Gemini API key from environment
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+if not GEMINI_API_KEY:
+    print("⚠️ Warning: GEMINI_API_KEY not set!")
 
 # Serve frontend
 @app.route("/")
@@ -16,12 +18,11 @@ def index():
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.get_json()
-    user_message = data.get("message", "")  # <-- frontend key
+    user_message = data.get("message", "").strip()  # <-- frontend key
 
     if not user_message:
         return jsonify({"response": "No message received."})
 
-    # Gemini API call
     headers = {
         "Authorization": f"Bearer {GEMINI_API_KEY}",
         "Content-Type": "application/json"
@@ -36,20 +37,20 @@ def chat():
         response = requests.post(
             "https://api.generativeai.google/v1beta2/models/text-bison-001:generate",
             headers=headers,
-            json=payload
+            json=payload,
+            timeout=10
         )
         response.raise_for_status()
         gemini_data = response.json()
+        # Debug print to check API response
+        print("Gemini response:", gemini_data)
+
         ai_text = gemini_data.get("candidates", [{}])[0].get("output", "Sorry, I didn't get that.")
         return jsonify({"response": ai_text})
-    except Exception as e:
-        print("Error:", e)
+    except requests.exceptions.RequestException as e:
+        print("Error connecting to Gemini API:", e)
         return jsonify({"response": "⚠️ Error connecting to AI."})
 
 if __name__ == "__main__":
-    # Use Render PORT environment variable or default 5000
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-
-
-
